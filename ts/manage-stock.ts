@@ -2,7 +2,7 @@ import $ from 'jquery';
 import { Item } from './dto/item';
 
 const BASE_API = 'http://localhost:8080/pos';
-const CUSTOMERS_SERVICE_API = `${BASE_API}/items`;
+const STOCK_SERVICE_API = `${BASE_API}/items`;
 const PAGE_SIZE = 6;
 
 let items: Array<Item> = [];
@@ -143,14 +143,14 @@ function loadAllItems():void{
 
             
             
-            // initPagination();
+            initPagination();
 
         }
 
     };
 
         // http://url?page=10&size=10
-        http.open('GET', CUSTOMERS_SERVICE_API + `?page=${selectedPage}&size=${PAGE_SIZE}`, true);
+        http.open('GET', STOCK_SERVICE_API + `?page=${selectedPage}&size=${PAGE_SIZE}`, true);
 
         // 4. Setting headers, etc.
     
@@ -181,7 +181,7 @@ function saveItem(item: Item): void{
         $('#txt-id').trigger('focus');
     };
 
-    http.open('POST', CUSTOMERS_SERVICE_API, true);
+    http.open('POST', STOCK_SERVICE_API, true);
 
     http.setRequestHeader('Content-Type', 'application/json');
 
@@ -211,7 +211,7 @@ function deleteCustomer(id: string): void {
 
     };
 
-    http.open('DELETE', CUSTOMERS_SERVICE_API + `?code=${id}`, true);
+    http.open('DELETE', STOCK_SERVICE_API + `?code=${id}`, true);
 
     http.send();
 }
@@ -241,7 +241,7 @@ function updateItem(item: Item): void {
 
     };
 
-    http.open('PUT', CUSTOMERS_SERVICE_API, true);
+    http.open('PUT', STOCK_SERVICE_API, true);
 
     http.setRequestHeader('Content-Type', 'application/json');
 
@@ -253,17 +253,18 @@ function updateItem(item: Item): void {
 function initPagination(): void {
 
     pageCount = Math.ceil(totalItems / PAGE_SIZE);
+    console.log(PAGE_SIZE);
 
     showOrHidePagination();
     if (pageCount === 1) return;
 
-    let html = `<li class="page-item"><a class="page-link" href="#!">«</a></li>`;
+    let html = `<li class="page-item"><a class="page-link" href="#!">Previous</a></li>`;
 
     for (let i = 0; i < pageCount; i++) {
         html += `<li class="page-item ${selectedPage === (i + 1) ? 'active' : ''}"><a class="page-link" href="javascript:void(0);">${i + 1}</a></li>`;
     }
 
-    html += `<li class="page-item"><a class="page-link" href="javascript:void(0);">»</a></li>`;
+    html += `<li class="page-item"><a class="page-link" href="javascript:void(0);">Next</a></li>`;
 
     $("ul.pagination").html(html);
 

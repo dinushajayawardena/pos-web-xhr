@@ -239,13 +239,13 @@ function initPagination(): void {
     showOrHidePagination();
     if (pageCount === 1) return;
 
-    let html = `<li class="page-item"><a class="page-link" href="#!">«</a></li>`;
+    let html = `<li class="page-item"><a class="page-link" href="#!">Previous</a></li>`;
 
     for (let i = 0; i < pageCount; i++) {
         html += `<li class="page-item ${selectedPage === (i + 1) ? 'active' : ''}"><a class="page-link" href="javascript:void(0);">${i + 1}</a></li>`;
     }
 
-    html += `<li class="page-item"><a class="page-link" href="javascript:void(0);">»</a></li>`;
+    html += `<li class="page-item"><a class="page-link" href="javascript:void(0);">Next</a></li>`;
 
     $("ul.pagination").html(html);
 
