@@ -1,0 +1,43 @@
+.trash-ico{
+    color: grey;
+    scale: 1.2;
+}
+
+table th:first-child{
+    text-align: center;
+}
+
+table td:first-child{
+    text-align: center;
+}
+
+table td:last-child{
+    text-align: center;
+}
+
+.trash-cell:hover .trash-ico{
+    color: red;
+    cursor: pointer;
+}
+
+.trash-cell:hover{
+    cursor: pointer;
+}
+
+#tr-data:hover{
+    background-color: lightcoral;
+    cursor: pointer;
+}
+
+#tbl-customers tbody tr:hover{
+    cursor: pointer;
+}
+
+#tbl-customers tbody tr td:last-child:hover .trash{
+    color: red;
+}
+
+.selected{
+    border-left: 3px solid rgb(255, 172, 47);
+    background-color: rgba(255, 214, 187, 0.2);
+}
