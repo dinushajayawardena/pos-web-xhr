@@ -1,16 +1,37 @@
 import $ from 'jquery';
+import { Customer } from './dto/customer';
+import { CustomerSet } from './dto/CustomerSet';
+import { Item } from './dto/item';
+import { ItemSet } from './dto/ItemSet';
 import { OrderList } from './dto/OrderList';
 
 const BASE_API = 'http://localhost:8080/pos';
 const PLACEORDER_SERVICE_API = `${BASE_API}/orders`;
+const CUSTOMERS_SERVICE_API = `${BASE_API}/customers`;
+const STOCK_SERVICE_API = `${BASE_API}/items`;
 const PAGE_SIZE = 6;
 
 let orders: Array<OrderList> = [];
+let customers: Array<Customer> = [];
+let items: Array<Item> = [];
+let customerSet: Array<CustomerSet> = [];
+let itemSet: Array<ItemSet> = [];
 let totalOrders = 0;
+let totalCustomers = 0;
+let totalItems = 0;
+let selectedCustomerId: undefined|string;
+let selectedItemCode: undefined|string;
+let selectedCustomerName = '';
 let selectedPage = 1;
 let pageCount = 1;
 
+
+
 loadAllOrders();
+loadAllCustomers();
+loadAllItems();
+getName();
+
 
 
 /* EVENTS */
@@ -91,9 +112,53 @@ $('#tbl-customers tbody').on('click', 'tr', function () {
 
 });
 
+
+/* Get the name of the selected customer */
+$('#cus-ids').on('change', ()=>{
+    getName();
+     
+});
+
+/* Get details of the selected item */
+$('#item-ids').on('change', ()=>{
+    getItemDetails();
+
+});
+
+
 /////////////////////////////////////////////
     
 /* FUNCTIONS */
+
+/* get the name of current customer */
+function getName():void{
+        selectedCustomerId = ($('#cus-ids option:selected').text());
+    
+    
+    for (const customer of customerSet) {
+        
+        if(customer.id === selectedCustomerId){
+            $('#cus-name').val(customer.name);  
+        } 
+    }
+}
+
+function getItemDetails() : void{
+    selectedItemCode = ($('#item-ids option:selected').text());
+    console.log(selectedItemCode);
+    
+    
+    for (const item of itemSet) {
+
+        let x = selectedItemCode.split('-');
+        
+        
+        if(item.code === x[0].trim()){
+            
+            $('#item-price').val(item.unitPrice);  
+        } 
+    }
+}
 
 /* Load customers */
 function loadAllOrders(): void {
@@ -140,7 +205,84 @@ function loadAllOrders(): void {
         http.send();
 }
 
+/* Load customers */
+function loadAllCustomers(): void {
 
+    const http = new XMLHttpRequest();
+
+    http.onreadystatechange = ()=> {
+
+        if (http.readyState === http.DONE) {
+
+            if (http.status !== 200) {
+                alert("Failed to fetch customers, try again...!");
+                return;
+            }
+
+            totalCustomers = +(http.getResponseHeader('X-Total-Count') + "");
+            customers = JSON.parse(http.responseText);
+
+            let html ='';
+            customerSet = [];
+            for (let i = 0; i < customers.length; i++) {
+                // console.log(customers[i].id, customers[i].name);   
+                html += `<option>${customers[i].id}</option>`;
+                customerSet.push(new CustomerSet(customers[i].id, customers[i].name));
+            }
+            $("#cus-ids").html(html);
+
+        }
+
+    };
+
+        // http://url?page=10&size=10
+        http.open('GET', CUSTOMERS_SERVICE_API, true);
+
+        // 4. Setting headers, etc.
+    
+        http.send();
+    
+}
+
+/* load items */
+function loadAllItems():void{
+    const http = new XMLHttpRequest();
+
+    http.onreadystatechange = ()=> {
+
+        if (http.readyState === http.DONE) {
+
+            console.log(http.status);
+            
+
+            if (http.status !== 200) {
+                alert("Failed to fetch items, try again...!");
+                return;
+            }
+
+            totalItems = +(http.getResponseHeader('X-Total-Count') + "");
+            items = JSON.parse(http.responseText);
+
+            
+            let html ='';
+            for (let i = 0; i < items.length; i++) {
+                // console.log(customers[i].id, customers[i].name);   
+                html += `<option>${items[i].code} - ${items[i].description}</option>`;
+                itemSet.push(new ItemSet(items[i].code, items[i].qtyOnHand, items[i].unitPrice));
+            }
+            $("#item-ids").html(html);
+
+        }
+
+    };
+
+        // http://url?page=10&size=10
+        http.open('GET', STOCK_SERVICE_API, true);
+
+        // 4. Setting headers, etc.
+    
+        http.send();
+}
 
 /* Save customers */
 function saveCustomer(customer: Customer): void{
