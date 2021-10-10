@@ -182,27 +182,22 @@
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="exampleInputPassword1">Quantity:</label>
-                                                        <input type="text" name="name" class="form-control" id="item-qty" placeholder="Qty">
+                                                        <input type="text" name="name" class="form-control" id="item-qty" value="0" placeholder="Qty">
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="exampleInputPassword1">Unit Price</label>
-                                                        <input type="text" name="name" class="form-control" id="item-price" placeholder="Unit Price">
+                                                        <input type="text" name="name" disabled  class="form-control" id="item-price" value="0.00" placeholder="Unit Price">
                                                     </div>
                                                 </div>
                                                 <div class="item-grp__right">
                                                     <div class="item-grp-list">
                                                         <label for="exampleInputPassword1">Items Added to Order</label>
-                                                        <select multiple class="form-control">
-                                                            <option>option 1</option>
-                                                            <option>option 2</option>
-                                                            <option>option 3</option>
-                                                            <option>option 4</option>
-                                                            <option>option 5</option>
+                                                        <select id="added-items" multiple class="form-control">
                                                         </select>
                                                     </div>
                                                     <div class="item-btn-grp">
-                                                        <button type="submit" class="btn btn-primary item-list-btn">Add Item</button>
-                                                        <button type="reset" class="btn btn-warning item-list-btn">Remove</button>
+                                                        <button type="submit" id="btn-add-item" class="btn btn-primary item-list-btn">Add Item</button>
+                                                        <button type="reset" id="btn-remove-item" class="btn btn-warning item-list-btn">Remove</button>
                                                     </div>
                                                 </div>
                                             </div>
