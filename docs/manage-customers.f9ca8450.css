@@ -1,0 +1,2 @@
+.trash-ico{color:grey;scale:1.2}table td:first-child,table td:last-child,table th:first-child{text-align:center}.trash-cell:hover .trash-ico{color:red;cursor:pointer}.trash-cell:hover{cursor:pointer}#tr-data:hover{background-color:#f08080;cursor:pointer}#tbl-customers tbody tr:hover{cursor:pointer}#tbl-customers tbody tr td:last-child:hover .trash{color:red}.selected{border-left:3px solid #ffac2f;background-color:rgba(255,214,187,.2)}
+/*# sourceMappingURL=/pos-admin-lte/manage-customers.f9ca8450.css.map */

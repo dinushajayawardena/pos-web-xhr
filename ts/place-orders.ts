@@ -5,6 +5,9 @@ import { Item } from './dto/item';
 import { ItemsAdded } from './dto/ItemsAdded';
 import { ItemSet } from './dto/ItemSet';
 import { OrderList } from './dto/OrderList';
+import { PlacedOrder } from './dto/PlacedOrder';
+import { PlacedOrderDetial } from './dto/PlacedOrderDetail';
+
 
 const BASE_API = 'http://localhost:8080/pos';
 const PLACEORDER_SERVICE_API = `${BASE_API}/orders`;
@@ -18,6 +21,7 @@ let items: Array<Item> = [];
 let customerSet: Array<CustomerSet> = [];
 let itemSet: Array<ItemSet> = [];
 let listOfItems: Array<ItemsAdded> = [];
+let placedOrder: PlacedOrder;
 let totalOrders = 0;
 let totalCustomers = 0;
 let totalItems = 0;
@@ -26,6 +30,8 @@ let selectedItemCode: undefined|string;
 let selectedCustomerName = '';
 let selectedPage = 1;
 let pageCount = 1;
+let total = 0;
+let itemTotal = 0;
 
 
 
@@ -37,6 +43,10 @@ getName();
 
 
 /* EVENTS */
+
+$('#item-qty').on('keypress', ()=>{
+    
+});
 
 /* Item Add Button Event */
 $('#btn-add-item').on('click', (eventData)=>{
@@ -59,7 +69,9 @@ $('#btn-add-item').on('click', (eventData)=>{
             return;
         }
 
-        if(requestedQty == 0){
+        
+
+        if(requestedQty == 0 ){
             alert("Please enter a quantity!");
             $('#item-qty').trigger('focus').trigger('select');
             validate = false;
@@ -89,64 +101,90 @@ $('#btn-add-item').on('click', (eventData)=>{
     $('#item-qty').val(0);
     $('#item-ids').trigger('focus').trigger('select');
     
-  
+    itemTotal = itemToBeAdded.unitPrice * itemToBeAdded.requestedQty;
 
-    // if(validate){
-    //     const selectedItem = $('#item-ids option:selected').text();
-    //     
-    //     console.log(listOfItems);
-        
-    // }
+    console.log(itemTotal);
+    
+    total += itemTotal;
+      
+    $('#txt-total').text("Total: " + total); 
 
-   
+    $('#btn-remove-item').trigger('click');
     
+});
+
+/* Item selection Event */
+$('#added-items>option').on('select', ()=>{
+
+    console.log("working");
     
-})
+
+});
 
 /* Save Button Event */
 $('#btn-save').on('click', (eventData) => {
     eventData.preventDefault();
 
-    const txtId = $('#txt-id');
-    const txtName = $('#txt-name');
-    const txtAddress = $('#txt-address');
+    let tempTotal: string[] = ($('#txt-total') + "").split(':');
+    const txtOrderId = $('#order-id');
+    const txtCusId = $('#cus-ids');
+    const txtCusName = $('#cus-name');
+    const arrayItemList: Array<ItemsAdded> = [];
+    const total = +tempTotal;
 
-    let order_id = (txtId.val() as string).trim();
-    let name = (txtName.val() as string).trim();
-    let address = (txtAddress.val() as string).trim();
+    console.log(listOfItems);
+    
+
+    listOfItems.forEach(i =>{
+    
+    });
+    
+   
+    let orderId = (txtOrderId.val() as string).trim();
+    let cusId = (txtCusId.val() as string).trim();
+    let customerName = (txtCusName.val() as string).trim();
 
     let validated = true;
-    $('#txt-id, #txt-name, #txt-address').removeClass('is-invalid');
+    $('#order-id, #cus-ids, #cus-name').removeClass('is-invalid');
 
-    if (address.length < 3) {
-        txtAddress.addClass('is-invalid');
-        txtAddress.trigger('select');
+
+    if(total <= 0){
+        $('#txt-total').addClass('is-invalid');
+        alert("Order Total is invalid")
         validated = false;
     }
 
-    if (!/^[A-Za-z ]+$/.test(name)) {
-        txtName.addClass('is-invalid');
-        txtName.trigger('select');
+    if (arrayItemList.length <= 0) {
+        // txtAddress.addClass('is-invalid');
+        // txtAddress.trigger('select');
         validated = false;
     }
 
-    if (!/^C\d{3}$/.test(id)) {
-        txtId.addClass('is-invalid');
-        txtId.trigger('select');
+    if (!/^[A-Za-z ]+$/.test(customerName)) {
+        txtCusName.addClass('is-invalid');
+        txtCusName.trigger('select');
         validated = false;
     }
 
-    if (!validated) return;
+    if (!/^OD\d{3}$/.test(orderId)) {
+        txtOrderId.addClass('is-invalid');
+        txtOrderId.trigger('select');
+        validated = false;
+    }
 
-    if (txtId.attr('disabled')) {
+    // if (!validated) return;
+
+    if (txtOrderId.attr('disabled')) {
 
         const selectedRow = $("#tbl-customers tbody tr.selected");
-        updateCustomer(new Customer(id, name, address));
+        // updateCustomer(new Customer(id, cusId, address));
         return;
     }
 
-
-    saveCustomer(new Customer(id, name, address));
+    const date: Date = new Date();
+    console.log(typeof date);
+    
+    saveOrder(new PlacedOrder( orderId, date, cusId, itemSet));
 });
 
 /* Delete Button Event */
@@ -241,7 +279,7 @@ function loadAllOrders(): void {
                 return;
             }
 
-            totalOrders = +(http.getResponseHeader('X-Total-Count'));
+            totalOrders = +(http.getResponseHeader('X-Total-Count')+ "");
             orders = JSON.parse(http.responseText);
 
             $('#tbl-orders tbody tr').remove();
@@ -335,7 +373,7 @@ function loadAllItems():void{
             for (let i = 0; i < items.length; i++) {
                 // console.log(customers[i].id, customers[i].name);   
                 html += `<option>${items[i].code} - ${items[i].description}</option>`;
-                itemSet.push(new ItemSet(items[i].code, items[i].qtyOnHand, items[i].unitPrice));
+                itemSet.push(new ItemSet(items[i].code, items[i].unitPrice, items[i].qtyOnHand));
             }
             $("#item-ids").html(html);
 
@@ -352,34 +390,36 @@ function loadAllItems():void{
 }
 
 /* Save customers */
-function saveCustomer(customer: Customer): void{
+function saveOrder(order: PlacedOrder): void{
     const http = new XMLHttpRequest();
 
     http.onreadystatechange = () => {
 
+        console.log("State: " + http.readyState);
+        
         if (http.readyState !== http.DONE) return;
 
         if (http.status !== 201) {
             console.error(http.responseText);
-            alert("Failed to save the customer, retry");
+            alert("Failed to save the order, retry");
             return;
         }
 
-        alert("Customer has been saved successfully");
+        alert("Order has been saved successfully");
 
-        totalCustomers++;
-        pageCount = Math.ceil(totalCustomers / PAGE_SIZE);
+        totalOrders++;
+        pageCount = Math.ceil(totalOrders / PAGE_SIZE);
 
         navigateToPage(pageCount);
         $('#txt-id, #txt-name, #txt-address').val('');
         $('#txt-id').trigger('focus');
     };
 
-    http.open('POST', CUSTOMERS_SERVICE_API, true);
+    http.open('POST', PLACEORDER_SERVICE_API, true);
 
     http.setRequestHeader('Content-Type', 'application/json');
 
-    http.send(JSON.stringify(customer));
+    // http.send(JSON.stringify(customer));
 }
 
 /* Delete customers */

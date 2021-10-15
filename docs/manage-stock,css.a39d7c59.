@@ -1,0 +1,12 @@
+#tbl-items tbody tr:hover{
+    cursor: pointer;
+}
+
+#tbl-items tbody tr td:last-child:hover .trash{
+    color: red;
+}
+
+.selected{
+    border-left: 3px solid rgb(255, 172, 47);
+    background-color: rgba(255, 214, 187, 0.2);
+}

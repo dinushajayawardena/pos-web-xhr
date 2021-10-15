@@ -1,7 +1,7 @@
 export class ItemSet{
-    public constructor(public code:string,
-        public qty:number,
-        public unitPrice: number){
+    public constructor( public code:string,
+                        public unitPrice: number,
+                        public qty:number){
 
         }
 }
