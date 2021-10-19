@@ -1,4 +1,4 @@
-import $ from 'jquery';
+import $, { event } from 'jquery';
 import { Customer } from './dto/customer';
 import { CustomerSet } from './dto/CustomerSet';
 import { Item } from './dto/item';
@@ -6,8 +6,6 @@ import { ItemsAdded } from './dto/ItemsAdded';
 import { ItemSet } from './dto/ItemSet';
 import { OrderList } from './dto/OrderList';
 import { PlacedOrder } from './dto/PlacedOrder';
-import { PlacedOrderDetial } from './dto/PlacedOrderDetail';
-
 
 const BASE_API = 'http://localhost:8080/pos';
 const PLACEORDER_SERVICE_API = `${BASE_API}/orders`;
@@ -30,16 +28,14 @@ let selectedItemCode: undefined|string;
 let selectedCustomerName = '';
 let selectedPage = 1;
 let pageCount = 1;
-let total = 0;
+let selectedItemId = '';
+
 let itemTotal = 0;
-
-
 
 loadAllOrders();
 loadAllCustomers();
 loadAllItems();
 getName();
-
 
 
 /* EVENTS */
@@ -48,76 +44,113 @@ $('#item-qty').on('keypress', ()=>{
     
 });
 
+$('#btn-remove-item').prop('disabled', true);
+
 /* Item Add Button Event */
 $('#btn-add-item').on('click', (eventData)=>{
     eventData.preventDefault();
 
     let validate = true;
     let id = "";
-    let requestedQty = -1;
-    let price = -1;
+    let requestedQty: number = 0;
+    let price = 0;
+    let isDuplicated = false;
+    let total = 0;
     
-    id = $('#item-ids option:selected').text() as string;
-    requestedQty = ($('#item-qty').val()) as number;
+    id = $('#item-ids option:selected').text();
+    requestedQty = $('#item-qty').val() as number;
     price = $('#item-price').val() as number;
-    
+
     /* validations */
-        if(id === null){
-            alert("Please select an Item first!");
-            $('#item-ids').trigger('focus').trigger('select');
-            validate = false;
-            return;
-        }
+    if(id === null){
+        alert("Please select an Item first!");
+        $('#item-ids').trigger('focus').trigger('select');
+        validate = false;
+        return;
+    }
+
+
+    if(requestedQty == 0 || /d/.test(requestedQty+"")){
+        alert("Please enter a valid quantity!");
+        $('#item-qty').trigger('focus').trigger('select');
+        validate = false;
+        return;
+    }
+
+    if(price == 0.00){
+        alert("Something wrong with loading item data. Try again...!");
+        $('#item-price').trigger('focus').trigger('select');
+        validate = false;
+        return;
+    }
+
+    /* Ready to add/update item */
+
+        listOfItems.forEach(i => {
+            if(i.itemIdentifier === id){
+                
+                let oldQty:number = i.requestedQty;
+                let newQty = parseInt(oldQty) + parseInt(requestedQty);
+                i.requestedQty = newQty;
+                isDuplicated = true;
+            }
+        });
+            
+            /* Add as a new item */
+            if(!isDuplicated){
+
+                let itemToBeAdded = new ItemsAdded(id, requestedQty, price);
+                listOfItems.push(itemToBeAdded);
+    
+                let html ='';
+                for (let i = 0; i < listOfItems.length; i++) {
+                            
+                html += `<option>${listOfItems[i].itemIdentifier}</option>`;
+                    itemSet.push(new ItemSet(items[i].code, items[i].qtyOnHand, items[i].unitPrice));
+                }
+                $("#added-items").html(html);
+
+            }
 
         
 
-        if(requestedQty == 0 ){
-            alert("Please enter a quantity!");
-            $('#item-qty').trigger('focus').trigger('select');
-            validate = false;
-            return;
-        }
+           
+            listOfItems.forEach(i =>{
 
-        if(price == 0.00){
-            alert("Something wrong with loading item data. Try again...!");
-            $('#item-price').trigger('focus').trigger('select');
-            validate = false;
-            return;
-        }
+                total = total + i.requestedQty * i.unitPrice;
 
-    let itemToBeAdded = new ItemsAdded(id, requestedQty, price);
-    listOfItems.push(itemToBeAdded);
+            });
 
-    let html ='';
-    for (let i = 0; i < listOfItems.length; i++) {
-                
-    html += `<option>${listOfItems[i].itemIdentifier}</option>`;
-        itemSet.push(new ItemSet(items[i].code, items[i].qtyOnHand, items[i].unitPrice));
-    }
-    $("#added-items").html(html);
-    
-    
-    /* Clear item input set */
-    $('#item-qty').val(0);
-    $('#item-ids').trigger('focus').trigger('select');
-    
-    itemTotal = itemToBeAdded.unitPrice * itemToBeAdded.requestedQty;
+            $('#txt-total').text('Total : '+ total);
+            
 
-    console.log(itemTotal);
-    
-    total += itemTotal;
-      
-    $('#txt-total').text("Total: " + total); 
+        /* Clear item input set */
+        $('#item-qty').val(0);
+        $('#item-ids').trigger('focus').trigger('select');
+        
 
-    $('#btn-remove-item').trigger('click');
+        // $('#btn-remove-item').trigger('click');
     
 });
 
-/* Item selection Event */
-$('#added-items>option').on('select', ()=>{
 
-    console.log("working");
-    
+/* Item selection Event */
+$('#added-items').on('click', (eventData)=>{
+
+    $('#btn-remove-item').prop('disabled', false);
+
+    selectedItemId = $('#added-items option:selected').text();
+
+    $('#btn-remove-item').attr('disabled');
+
+    listOfItems.forEach(i=>{
+        if(i.itemIdentifier === selectedItemId){
+            $('#item-ids').val(i.itemIdentifier);
+            $('#item-qty').val(i.requestedQty);
+        }
+    });
+
+    getItemDetails();
 
 });
 
@@ -201,6 +234,50 @@ $('#btn-clear').on('click', () => {
     $('#txt-id').removeAttr('disabled');
 });
 
+/* Remove item button Event */
+$('#btn-remove-item').on('click', ()=>{
+
+    console.log(listOfItems);
+    
+
+    var isReadyToDelete = confirm("Are you sure to delete the item..?");
+
+    if(isReadyToDelete){
+
+        listOfItems.forEach(i=>{
+            if(i.itemIdentifier === selectedItemId){
+
+                const index = listOfItems.indexOf(i);
+                console.log(index);
+                
+
+                if(index > -1){
+                    listOfItems.splice(index, 1);
+                    console.log(listOfItems);
+                }
+
+                
+            }
+        });
+
+        $('#added-items').html('');
+    
+                let html ='';
+                for (let i = 0; i < listOfItems.length; i++) {
+                            
+                html += `<option>${listOfItems[i].itemIdentifier}</option>`;
+                    itemSet.push(new ItemSet(items[i].code, items[i].qtyOnHand, items[i].unitPrice));
+                }
+                $("#added-items").html(html);
+
+        $('#item-qty').val(0);
+    
+        $('#btn-remove-item').prop('disabled', true);
+
+    }
+
+});
+
 /* Table row selection */
 $('#tbl-customers tbody').on('click', 'tr', function () {
 
@@ -224,10 +301,20 @@ $('#cus-ids').on('change', ()=>{
      
 });
 
-/* Get details of the selected item */
-$('#item-ids').on('change', ()=>{
-    getItemDetails();
+itemSelector();
 
+function itemSelector(){
+
+    /* Get details of the selected item */
+    $('#item-ids').on('change', ()=>{
+        getItemDetails();
+
+    });
+
+}
+
+$('#item-qty').on('click', function(){
+    $(this).select();
 });
 
 
