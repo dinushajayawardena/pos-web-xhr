@@ -1,7 +1,9 @@
 import $, { event } from 'jquery';
+import { format } from 'path/posix';
 import { Customer } from './dto/customer';
 import { CustomerSet } from './dto/CustomerSet';
 import { Item } from './dto/item';
+import { ItemList } from './dto/ItemList';
 import { ItemsAdded } from './dto/ItemsAdded';
 import { ItemSet } from './dto/ItemSet';
 import { OrderList } from './dto/OrderList';
@@ -20,6 +22,7 @@ let customerSet: Array<CustomerSet> = [];
 let itemSet: Array<ItemSet> = [];
 let listOfItems: Array<ItemsAdded> = [];
 let placedOrder: PlacedOrder;
+let itemList: Array<ItemList> = [];
 let totalOrders = 0;
 let totalCustomers = 0;
 let totalItems = 0;
@@ -112,9 +115,6 @@ $('#btn-add-item').on('click', (eventData)=>{
 
             }
 
-        
-
-           
             listOfItems.forEach(i =>{
 
                 total = total + i.requestedQty * i.unitPrice;
@@ -122,7 +122,6 @@ $('#btn-add-item').on('click', (eventData)=>{
             });
 
             $('#txt-total').text('Total : '+ total);
-            
 
         /* Clear item input set */
         $('#item-qty').val(0);
@@ -132,7 +131,6 @@ $('#btn-add-item').on('click', (eventData)=>{
         // $('#btn-remove-item').trigger('click');
     
 });
-
 
 /* Item selection Event */
 $('#added-items').on('click', (eventData)=>{
@@ -158,21 +156,14 @@ $('#added-items').on('click', (eventData)=>{
 $('#btn-save').on('click', (eventData) => {
     eventData.preventDefault();
 
-    let tempTotal: string[] = ($('#txt-total') + "").split(':');
+    let tempTotal: string[] = ($('#txt-total').text()).split(':');
     const txtOrderId = $('#order-id');
     const txtCusId = $('#cus-ids');
     const txtCusName = $('#cus-name');
     const arrayItemList: Array<ItemsAdded> = [];
-    const total = +tempTotal;
+    const total: number = tempTotal[1].trim();
+    const items: Array<ItemList> = [];
 
-    console.log(listOfItems);
-    
-
-    listOfItems.forEach(i =>{
-    
-    });
-    
-   
     let orderId = (txtOrderId.val() as string).trim();
     let cusId = (txtCusId.val() as string).trim();
     let customerName = (txtCusName.val() as string).trim();
@@ -180,33 +171,32 @@ $('#btn-save').on('click', (eventData) => {
     let validated = true;
     $('#order-id, #cus-ids, #cus-name').removeClass('is-invalid');
 
-
+    // console.log(tempTotal[1]);
+    
+    
     if(total <= 0){
         $('#txt-total').addClass('is-invalid');
         alert("Order Total is invalid")
         validated = false;
     }
-
-    if (arrayItemList.length <= 0) {
-        // txtAddress.addClass('is-invalid');
-        // txtAddress.trigger('select');
+    
+    if (listOfItems.length <= 0) {
         validated = false;
     }
-
+    
     if (!/^[A-Za-z ]+$/.test(customerName)) {
         txtCusName.addClass('is-invalid');
         txtCusName.trigger('select');
         validated = false;
     }
-
+    
     if (!/^OD\d{3}$/.test(orderId)) {
         txtOrderId.addClass('is-invalid');
         txtOrderId.trigger('select');
         validated = false;
     }
-
-    // if (!validated) return;
-
+    
+    if (!validated) return;
     if (txtOrderId.attr('disabled')) {
 
         const selectedRow = $("#tbl-customers tbody tr.selected");
@@ -214,10 +204,25 @@ $('#btn-save').on('click', (eventData) => {
         return;
     }
 
-    const date: Date = new Date();
-    console.log(typeof date);
+    const fulldate: Date = new Date();
+    let year = fulldate.getFullYear();
+    let month = (String("0" + (fulldate.getMonth() + 1)).slice(-2)).trim();
+    let date = (String("0" + fulldate.getDate()).slice(-2)).trim();
+
+    const dateOfOrder: string = year + "-" + month + "-" + date;
+
+
+    listOfItems.forEach(i =>{
+        let code = i.itemIdentifier.split('-')
+
+        items.push(new ItemList(code[0].trim(), i.requestedQty, i.unitPrice));
+    });
+
+    // console.log(items);
+    // console.log(customerName, total);
     
-    saveOrder(new PlacedOrder( orderId, date, cusId, itemSet));
+    
+    saveOrder(new PlacedOrder( orderId, dateOfOrder, cusId, customerName, total, items));
 });
 
 /* Delete Button Event */
@@ -316,7 +321,6 @@ function itemSelector(){
 $('#item-qty').on('click', function(){
     $(this).select();
 });
-
 
 /////////////////////////////////////////////
     
@@ -480,6 +484,8 @@ function loadAllItems():void{
 function saveOrder(order: PlacedOrder): void{
     const http = new XMLHttpRequest();
 
+    console.log(order);
+
     http.onreadystatechange = () => {
 
         console.log("State: " + http.readyState);
@@ -500,6 +506,7 @@ function saveOrder(order: PlacedOrder): void{
         navigateToPage(pageCount);
         $('#txt-id, #txt-name, #txt-address').val('');
         $('#txt-id').trigger('focus');
+
     };
 
     http.open('POST', PLACEORDER_SERVICE_API, true);

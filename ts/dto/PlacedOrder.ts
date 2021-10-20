@@ -1,10 +1,12 @@
-import { ItemSet } from "./ItemSet";
+import { ItemList } from "./ItemList";
 
 export class PlacedOrder{
     constructor(public orderId:string,
-                public date:Date,
+                public orderDate:string,
                 public customerId:String,
-                public orderDetails: Array<ItemSet>){
+                public customerName:String,
+                public orderTotal:number,
+                public orderDetails: Array<ItemList>){
                     
                 }
 }
