@@ -39,7 +39,7 @@ loadAllOrders();
 loadAllCustomers();
 loadAllItems();
 getName();
-
+clearForm();  
 
 /* EVENTS */
 
@@ -217,12 +217,9 @@ $('#btn-save').on('click', (eventData) => {
 
         items.push(new ItemList(code[0].trim(), i.requestedQty, i.unitPrice));
     });
-
-    // console.log(items);
-    // console.log(customerName, total);
-    
     
     saveOrder(new PlacedOrder( orderId, dateOfOrder, cusId, customerName, total, items));
+
 });
 
 /* Delete Button Event */
@@ -242,7 +239,7 @@ $('#btn-clear').on('click', () => {
 /* Remove item button Event */
 $('#btn-remove-item').on('click', ()=>{
 
-    console.log(listOfItems);
+    // console.log(listOfItems);
     
 
     var isReadyToDelete = confirm("Are you sure to delete the item..?");
@@ -253,12 +250,12 @@ $('#btn-remove-item').on('click', ()=>{
             if(i.itemIdentifier === selectedItemId){
 
                 const index = listOfItems.indexOf(i);
-                console.log(index);
+                // console.log(index);
                 
 
                 if(index > -1){
                     listOfItems.splice(index, 1);
-                    console.log(listOfItems);
+                    // console.log(listOfItems);
                 }
 
                 
@@ -306,7 +303,7 @@ $('#cus-ids').on('change', ()=>{
      
 });
 
-itemSelector();
+itemSelector(); 
 
 function itemSelector(){
 
@@ -421,11 +418,12 @@ function loadAllCustomers(): void {
             let html ='';
             customerSet = [];
             for (let i = 0; i < customers.length; i++) {
-                // console.log(customers[i].id, customers[i].name);   
+                // console.log(customers[i].id, customerhtmls[i].name);   
                 html += `<option>${customers[i].id}</option>`;
                 customerSet.push(new CustomerSet(customers[i].id, customers[i].name));
             }
             $("#cus-ids").html(html);
+            $("#cus-ids").val('');
 
         }
 
@@ -467,7 +465,7 @@ function loadAllItems():void{
                 itemSet.push(new ItemSet(items[i].code, items[i].unitPrice, items[i].qtyOnHand));
             }
             $("#item-ids").html(html);
-
+            $("#item-ids").val('');
         }
 
     };
@@ -484,11 +482,11 @@ function loadAllItems():void{
 function saveOrder(order: PlacedOrder): void{
     const http = new XMLHttpRequest();
 
-    console.log(order);
+    // console.log(order);
 
     http.onreadystatechange = () => {
 
-        console.log("State: " + http.readyState);
+        // console.log("State: " + http.readyState);
         
         if (http.readyState !== http.DONE) return;
 
@@ -499,6 +497,8 @@ function saveOrder(order: PlacedOrder): void{
         }
 
         alert("Order has been saved successfully");
+
+        clearForm();
 
         totalOrders++;
         pageCount = Math.ceil(totalOrders / PAGE_SIZE);
@@ -513,7 +513,8 @@ function saveOrder(order: PlacedOrder): void{
 
     http.setRequestHeader('Content-Type', 'application/json');
 
-    // http.send(JSON.stringify(customer));
+    http.send(JSON.stringify(order));
+
 }
 
 /* Delete customers */
@@ -618,4 +619,21 @@ function navigateToPage(page: number): void {
 
 function showOrHidePagination(): void {
     pageCount > 1 ? $(".pagination").show() : $('.pagination').hide();
+}
+
+function clearForm(): void {
+    
+    $('#order-id').val('');
+    $('#cus-ids').val('');
+    $('#cus-name').val('');
+    $('#item-ids').val('');
+    $('#added-items').val('');
+    $('#item-qty').val('0');    
+    $('#item-price').val('0.00');    
+    $('#txt-total').text('Total : 0.00');    
+    $("#added-items").html('');
+    listOfItems = [];
+
+    $('#order-id').trigger('focus');
+    
 }
