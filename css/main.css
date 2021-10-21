@@ -169,6 +169,25 @@ textarea {
   clear: both;
 }
 
+.sidebar-navigator{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.drawer{
+  margin-right: 10px;
+  width: 40px;
+}
+
+.drawer-icon{
+  color: white;
+  margin-right: 5px;
+}
+
+.drawer-icon:hover{
+  color: lightskyblue;
+}
 /* ==========================================================================
    EXAMPLE Media Queries for Responsive Design.
    These examples override the primary ('mobile first') styles.
@@ -261,3 +280,17 @@ textarea {
   }
 }
 
+@media screen and (max-width: 1150px){
+ .main-sidebar{
+   display: none;
+ }   
+
+ .content-wrapper{
+    margin-left: 0 !important;
+ }
+
+ .main-header{
+    margin-left: 0 !important;
+ }
+
+}

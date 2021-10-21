@@ -1,36 +1,20 @@
  import $ from 'jquery';
+ let aside = $('.main-sidebar');
 
-// let pageSize = calculatePageSize();
+ $('.nav-item').on('click', ()=>{
 
-// let pages: number = 1;
-// let selectedPage = 1;
 
-// function calculatePageSize() {
-//   const tbl = $("#tbl-customers");
-//   const tFoot = $("#tbl-customers tfoot");
-//   const rowHtml = `
-//         <tr class="dummy-data">
-//             <td>OD001</td>
-//             <td>C001</td>
-//             <td>Manoj</td>
-//             <td>2021/01/01</td>
-//             <td>1,300</div></td>
-//         </tr>
-//     `;
+    if(!aside.is(':visible')){
+        
+        aside.css('display', 'unset');
+    }
+    
+ });
 
-//   const nav = $('nav');
-//   nav.removeClass('d-none');
+ $('.drawer-icon').on('click', ()=>{
 
-//   const top = $(window).height()! - ($('footer').height()! + nav.outerHeight(true)!);
+    aside.css('display', 'none');
 
-//   nav.addClass('d-none');
-//   tFoot.hide();
-// }
-
-// function showOrHidePagination() {
-//   const nav = $("nav");
-
-//   // ($("#tbl-orders tbody tr").length > pageSize) ? nav.removeClass("d-none") : nav.addClass("d-none");
-// }
+ });
 
 

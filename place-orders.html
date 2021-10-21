@@ -51,10 +51,15 @@
             <aside
                 class="main-sidebar sidebar-dark-primary elevation-4">
                 <!-- Brand Logo -->
-                <a href="#" class="brand-link">
-                    <i class="fab fa-opencart"></i>
-                    <span class="brand-text font-weight-light">DEP7 - POS</span>
-                </a>
+                <div class="sidebar-navigator">
+                    <a href="#" class="brand-link">
+                        <i class="fab fa-opencart"></i>
+                        <span class="brand-text font-weight-light">DEP7 - POS</span>
+                    </a>
+                    <a href="#" class="drawer">
+                        <i class="fas fa-angle-double-left drawer-icon"></i>
+                    </a>
+                </div>
 
                 <!-- Sidebar -->
                 <div
@@ -63,7 +68,7 @@
                     <nav class="mt-2">
                         <ul
                         class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <!-- Add icons to the links using the .nav-icon class
+                        <!-- Add icons to the links using the .nav-icon class2
                                                                                                                                                          with font-awesome or any other icon font library -->
                         <li class="nav-item menu-open">
                             <a href="index.html" class="nav-link">
@@ -324,5 +329,6 @@
         </div>
         <script type="module" src="node_modules/big.js/big.js"></script>
         <script src="ts/place-orders.ts"></script>
+        <script src="ts/main.ts"></script>
     </body>
 </html>
